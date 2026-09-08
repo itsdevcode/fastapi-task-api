@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from task import TaskCreate, TaskResponse
+from datetime import datetime
+import uuid
 app = FastAPI(
     title="Tasks API",
     description="Tasks API",
@@ -13,13 +15,20 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/task")
+@app.post("/tasks")
 def create_task(task: TaskCreate):
-    tasks.append(task)
-    return {
-    "message": "Task created",
-    "task": TaskResponse(**task.dict())
+    task_data={
+        **task.model_dump(),
+        "id": str(uuid.uuid4()),
+        "is_completed": False,
+        "created_at": datetime.now(),
+        "updated_at": None
     }
+    tasks.append(task_data)
+    return {
+        "message": "Task created successfully",
+        "task": TaskResponse(**task_data)
+        }
 
 @app.get("/tasks")
 def get_tasks():
@@ -38,6 +47,6 @@ def get_task(task_id: str):
             break
     
     return {
-        "message": "Task found",
+        "message": "Task fetched successfully" if len(task_detail) > 0 else "Task not found",
         "task": task_detail
     }
