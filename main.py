@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from task import TaskCreate, TaskResponse
 from datetime import datetime
 import uuid
@@ -34,19 +34,19 @@ def create_task(task: TaskCreate):
 def get_tasks():
     return {
         "message": "Task list fetched successfully",
-        "tasks": [TaskResponse(**task.dict()) for task in tasks]
+        "tasks": [TaskResponse(**task) for task in tasks]
     }
 
 
 @app.get("/tasks/{task_id}")
 def get_task(task_id: str):
-    task_detail = []
     for task in tasks:
-        if task.id == task_id:
-            task_detail.append(TaskResponse(**task.dict()))
-            break
-    
-    return {
-        "message": "Task fetched successfully" if len(task_detail) > 0 else "Task not found",
-        "task": task_detail
-    }
+        if task["id"] == task_id:
+           return {
+             "message": "Task fetched successfully",
+             "task": TaskResponse(**task    )
+           }
+    raise HTTPException(
+        status_code= 404,
+        detail="Task not found",
+    )
