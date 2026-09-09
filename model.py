@@ -18,3 +18,11 @@ class TaskUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     is_completed: bool | None = None
+
+class TaskDetailResponse(BaseModel):
+    message:str
+    task:TaskResponse
+
+class TaskListResponse(BaseModel):
+    message: str
+    tasks: list[TaskResponse]
