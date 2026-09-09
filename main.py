@@ -56,6 +56,7 @@ def update_task(task_id: str, task: TaskUpdate):
     task_data = next((task for task in tasks if task["id"] == task_id), None)
     if task_data is not None:
         task_data.update(**task.model_dump(exclude_unset=True))
+        task_data["updated_at"] = datetime.now()
         return {
             "message": "Task updated successfully.",
             "task": TaskResponse(**task_data)
