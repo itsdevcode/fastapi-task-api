@@ -16,7 +16,7 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/tasks")
+@app.post("/tasks", response_model=TaskDetailResponse)
 def create_task(task: TaskCreate):
     task_data={
         **task.model_dump(),
@@ -26,44 +26,36 @@ def create_task(task: TaskCreate):
         "updated_at": None
     }
     tasks.append(task_data)
-    return TaskDetailResponse(
-        message= "Task created successfully",
-        task= TaskResponse(**task_data)
-    )
+    return {"message": "Task created successfully","task": TaskResponse(**task_data)}
 
-@app.get("/tasks")
+@app.get("/tasks", response_model=TaskListResponse)
 def get_tasks():
-    return TaskListResponse(
-        message= "Task list fetched successfully",
-        tasks= [TaskResponse(**task) for task in tasks]
-    )
+    return {"message": "Task list fetched successfully","tasks": [TaskResponse(**task) for task in tasks]}
 
-
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", response_model=TaskDetailResponse)
 def get_task(task_id: str):
     task = find_task_or_404(task_id, tasks)
-    return TaskDetailResponse(
-        message= "Task fetched successfully",
-        task= TaskResponse(**task)
-    )
-   
 
-@app.patch("/tasks/{task_id}")
+    return {"message": "Task fetched successfully","task": task}
+
+
+@app.patch("/tasks/{task_id}", response_model=TaskDetailResponse)
 def update_task(task_id: str, task: TaskUpdate):
     task_data = find_task_or_404(task_id, tasks)
-    task_data.update(**task.model_dump(exclude_unset=True))
-    task_data["updated_at"] = datetime.now()
-    return TaskDetailResponse(
-        message= "Task created successfully",
-        task= TaskResponse(**task_data)
+
+    task_data.update(
+        **task.model_dump(exclude_unset=True)
     )
 
+    task_data["updated_at"] = datetime.now()
 
-@app.delete("/tasks/{task_id}")
+    return {"message": "Task updated successfully","task": task_data}
+
+
+@app.delete("/tasks/{task_id}", response_model=TaskDetailResponse)
 def delete_task(task_id: str):
     task = find_task_or_404(task_id, tasks)
+
     tasks.remove(task)
-    return TaskDetailResponse(
-        message= "Task deleted successfully",
-        task= TaskResponse(**task)
-    )
+
+    return {"message": "Task deleted successfully","task": task}
