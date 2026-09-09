@@ -26,11 +26,11 @@ def create_task(task: TaskCreate):
         "updated_at": None
     }
     tasks.append(task_data)
-    return {"message": "Task created successfully","task": TaskResponse(**task_data)}
+    return {"message": "Task created successfully","task": task_data}
 
 @app.get("/tasks", response_model=TaskListResponse)
 def get_tasks():
-    return {"message": "Task list fetched successfully","tasks": [TaskResponse(**task) for task in tasks]}
+    return {"message": "Task list fetched successfully","tasks": tasks}
 
 @app.get("/tasks/{task_id}", response_model=TaskDetailResponse)
 def get_task(task_id: str):
