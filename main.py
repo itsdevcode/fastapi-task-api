@@ -1,5 +1,5 @@
 from fastapi import FastAPI,HTTPException
-from task import TaskCreate, TaskResponse
+from task import TaskCreate, TaskResponse, TaskUpdate
 from datetime import datetime
 import uuid
 app = FastAPI(
@@ -40,13 +40,42 @@ def get_tasks():
 
 @app.get("/tasks/{task_id}")
 def get_task(task_id: str):
-    for task in tasks:
-        if task["id"] == task_id:
-           return {
-             "message": "Task fetched successfully",
-             "task": TaskResponse(**task    )
-           }
+    task_data = next((task for task in tasks if task["id"] == task_id), None)
+    if task_data is not None:
+        return {
+            "message": "Task fetched successfully",
+            "task": TaskResponse(**task_data)
+        }
     raise HTTPException(
         status_code= 404,
         detail="Task not found",
+    )
+
+@app.patch("/tasks/{task_id}")
+def update_task(task_id: str, task: TaskUpdate):
+    task_data = next((task for task in tasks if task["id"] == task_id), None)
+    if task_data is not None:
+        task_data.update(**task.model_dump(exclude_unset=True))
+        return {
+            "message": "Task updated successfully.",
+            "task": TaskResponse(**task_data)
+        }
+
+    raise HTTPException(
+        status_code= 404,
+        detail="Task not found",
+    )
+
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: str):
+    task_data = next((task for task in tasks if task["id"] == task_id), None)
+    if task_data is not None:
+        tasks.remove(task_data)
+        return {
+            "message":"Task delete successfully"
+        }
+
+    raise HTTPException(
+        status_code = 404,
+        detail = "Task not found"
     )
