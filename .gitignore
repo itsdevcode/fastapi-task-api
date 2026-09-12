@@ -1,6 +1,0 @@
-.venv
-.env
-__pycache__/main.cpython-312.pyc
-__pycache__/task.cpython-312.pyc
-__pycache__/
-*.pyc
