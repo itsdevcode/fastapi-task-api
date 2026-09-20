@@ -2,7 +2,13 @@ from fastapi import FastAPI
 from routers.task import task_router
 from routers.user import user_router
 from middlewares.timing import TimingMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from middlewares.logging import LoggingMiddleware
+from middlewares.response_size import ResponseSizeMiddleware
+from middlewares.request_size import RequestSizeMiddleware
 
+from fastapi.responses import StreamingResponse
+from collections.abc import AsyncIterable
 def create_app() ->FastAPI:
     app = FastAPI(
         title="Tasks API",
@@ -16,7 +22,20 @@ def create_app() ->FastAPI:
     return app
 
 def register_middlewares(app: FastAPI) -> None:
+    origins = [
+        "http://localhost:3000",
+    ]
     app.add_middleware(TimingMiddleware)
+    app.add_middleware(LoggingMiddleware)
+    app.add_middleware(RequestSizeMiddleware)
+    app.add_middleware(ResponseSizeMiddleware)
+    app.add_middleware(
+        CORSMiddleware, 
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 def register_routers(app: FastAPI) -> None:
     api_v1_prefix = "/api/v1"
@@ -33,5 +52,11 @@ async def health_check():
 @app.get("/test")
 async def test_route():
     user_data = {"id": 1, "name": "Arun", "roles": ["admin"]}
-    breakpoint()  # <--- Execution yahan ruk jayegi (Die)
+    # breakpoint()  # <--- Execution yahan ruk jayegi (Die)
     return {"status": "ok"}
+
+@app.get("/stream-test", response_class=StreamingResponse)
+async def stream_test() -> AsyncIterable[bytes]:
+    yield b"Hello "    # chunk-1
+    yield b"Arun "     # chunk-2
+    yield b"Backend"   # chunk-3
