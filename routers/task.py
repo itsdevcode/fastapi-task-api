@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from utilis.user import get_current_user
 from schemas.user import UserResponse
 from enums.task import TaskShortField, SortOrder
-task_router = APIRouter()
+from custom_routes.timed_route import TaskTimedRoute
+
+task_router = APIRouter(route_class=TaskTimedRoute)
 
 @task_router.get("/tasks", response_model=TaskListResponse)
 def all(

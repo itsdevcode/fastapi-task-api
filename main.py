@@ -6,9 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from middlewares.logging import LoggingMiddleware
 from middlewares.response_size import ResponseSizeMiddleware
 from middlewares.request_size import RequestSizeMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from fastapi.responses import StreamingResponse
 from collections.abc import AsyncIterable
+
 def create_app() ->FastAPI:
     app = FastAPI(
         title="Tasks API",
@@ -29,6 +33,9 @@ def register_middlewares(app: FastAPI) -> None:
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(RequestSizeMiddleware)
     app.add_middleware(ResponseSizeMiddleware)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost","127.0.0.1"], www_redirect=False)
+    app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
+    # app.add_middleware(HTTPSRedirectMiddleware,)
     app.add_middleware(
         CORSMiddleware, 
         allow_origins=origins,
@@ -40,20 +47,20 @@ def register_middlewares(app: FastAPI) -> None:
 def register_routers(app: FastAPI) -> None:
     api_v1_prefix = "/api/v1"
     app.include_router(user_router, prefix=f"{api_v1_prefix}/users", tags=["Users"])
-    app.include_router(task_router, prefix=f"{api_v1_prefix}/tasks", tags=["Tasks"])
+    app.include_router(task_router,  tags=["Tasks"])
 
 app = create_app()
 
 # --- Health Check ---
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status": "ok"}
+    return {"data": "A" * 5000}
 
 @app.get("/test")
 async def test_route():
     user_data = {"id": 1, "name": "Arun", "roles": ["admin"]}
     # breakpoint()  # <--- Execution yahan ruk jayegi (Die)
-    return {"status": "ok"}
+    return {"data": "A" * 5000}
 
 @app.get("/stream-test", response_class=StreamingResponse)
 async def stream_test() -> AsyncIterable[bytes]:
